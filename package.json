@@ -32,7 +32,8 @@
         {
           "type": "webview",
           "id": "giraph.graphview",
-          "name": "Graph"
+          "name": "Graph",
+          "icon": "resources/giraph.svg"
         }
       ]
     }
