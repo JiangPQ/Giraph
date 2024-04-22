@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as cp from 'child_process';
 
 export class GiraphViewProvider implements vscode.WebviewViewProvider {
     public resolveWebviewView(
@@ -11,27 +12,30 @@ export class GiraphViewProvider implements vscode.WebviewViewProvider {
             //   localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')]
         };
 
-        webviewView.webview.html = getWebviewContent();
+        let gitVersion = '';
 
-        webviewView.webview.onDidReceiveMessage((message) => {
-            if (message.command === "hello") {
-                vscode.window.showInformationMessage("Hello from WebviewView!");
-            }
-        });
+        cp.spawn('git', ['--version'])
+            .on('exit', (code) => {
+                if (code !== 0) {
+                    vscode.window.showErrorMessage('Git not found. Please install Git and try again.');
+                } else {
+                    webviewView.webview.html = `<!DOCTYPE html>
+                                                <html lang="en">
+                                                <head>
+                                                    <meta charset="UTF-8">
+                                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                                    <title>Giraph Graph</title>
+                                                </head>
+                                                <body>
+                                                    <h1>Hello World!</h1>
+                                                    <p>Git Version: ${gitVersion}</p>
+                                                </body>
+                                                </html>
+                                                `;
+                }
+            })
+            .stdout.on('data', (data) => {
+                gitVersion += data.toString().trim();
+            });
     }
-}
-
-function getWebviewContent() {
-    return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Giraph Graph</title>
-			</head>
-			<body>
-				<h1>Hello World!</h1>
-			</body>
-			</html>
-`;
 }
